@@ -106,7 +106,7 @@ const UploadProductPage = (props) => {
         <br></br>
         <select name="continent" onChange={StateChangeHandler}>
           {continents.map((item) => (
-            <option key={item.key} value={item.value}>
+            <option key={item.key} value={item.key}>
               {item.value}
             </option>
           ))}

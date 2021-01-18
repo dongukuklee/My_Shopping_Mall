@@ -49,6 +49,7 @@ router.post("/products", (req, res) => {
   let skip = req.body.skip ? parseInt(req.body.skip) : 0;
   //product collection에있는 모든 상품정보를 가져온다.
 
+  let term = req.body.searchTerm;
   let findArgs = {};
 
   for (let key in req.body.filters) {
@@ -67,15 +68,45 @@ router.post("/products", (req, res) => {
   }
 
   console.log("continent", findArgs);
-  Product.find(findArgs)
+
+  if (term) {
+    Product.find(findArgs)
+      .find({ $text: { $search: term } })
+      .populate("writer")
+      .skip(skip)
+      .limit(limit)
+      .exec((err, productInfo) => {
+        if (err) return res.status(400).json({ success: false, err });
+        return res
+          .status(200)
+          .json({ success: true, productInfo, postSize: productInfo.length });
+      });
+  } else {
+    Product.find(findArgs)
+      .populate("writer")
+      .skip(skip)
+      .limit(limit)
+      .exec((err, productInfo) => {
+        if (err) return res.status(400).json({ success: false, err });
+        return res
+          .status(200)
+          .json({ success: true, productInfo, postSize: productInfo.length });
+      });
+  }
+});
+
+router.get("/products_by_id", (req, res) => {
+  let type = req.query.type;
+  let productId = req.query.id;
+
+  //productId를 이용해서 DB에서 productId와 같은 상품의 정보를 가져온다.
+  Product.find({
+    _id: productId,
+  })
     .populate("writer")
-    .skip(skip)
-    .limit(limit)
-    .exec((err, productInfo) => {
-      if (err) return res.status(400).json({ success: false, err });
-      return res
-        .status(200)
-        .json({ success: true, productInfo, postSize: productInfo.length });
+    .exec((err, product) => {
+      if (err) return res.status(400).send(err);
+      return res.status(200).send({ success: true, product });
     });
 });
 

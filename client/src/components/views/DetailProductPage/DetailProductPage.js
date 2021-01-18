@@ -35,7 +35,7 @@ const DetailProductPage = (props) => {
         </Col>
 
         <Col lg={12} sm={24}>
-          <ProductInfo />
+          <ProductInfo detail={product} />
         </Col>
       </Row>
     </div>

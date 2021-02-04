@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Button, Descriptions } from "antd";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../../../../../client/src/_actions/user_actions";
 const ProductInfo = (props) => {
+  const dispatch = useDispatch();
   const ClickHandler = (e) => {
+    //필요한 정보를 Cart 필드에 넣어준다.
+    dispatch(addToCart(props.detail._id));
     e.preventDefault();
-    console.log("장바구니에 추가 하였씁니다.");
+    alert("장바구니에 추가 하였씁니다.");
   };
   return (
     <div>

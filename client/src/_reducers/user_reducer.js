@@ -41,7 +41,7 @@ export default function (state = {}, action) {
     case ON_SUCCESS_BUY:
       return {
         ...state,
-        cartDetail: action.payload.productInfo,
+        cartDetail: action.payload.cartDetail,
         userData: {
           ...state.userData,
           cart: action.payload.cart,

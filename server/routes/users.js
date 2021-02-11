@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { User } = require("../models/User");
 const { Product } = require("../models/Product");
-
+const { Paymenr } = require("../models/Payment");
 const { auth } = require("../middleware/auth");
-
+const Payment = require("../models/Payment");
+const async = require("async");
 //=================================
 //             User
 //=================================
@@ -172,6 +173,66 @@ router.post("/successBuy", auth, (req, res) => {
     });
   });
   //2. Payment Collection 안에 자세한 결제 정보들 넣어주기
-  //3. Product Collection 안에 Sold 필드 정보 업데이트 시켜주기
+  //   Cart 비워주기
+  transactionData.user = {
+    id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+  };
+
+  transactionData.data = req.body.paymentData;
+
+  transactionData.product = history;
+
+  //history 정보 저장
+  User.findOneAndUpdate(
+    { _id: req.user._id },
+    { $push: { history: history }, $set: { cart: [] } },
+    { new: true },
+    (err, user) => {
+      if (err) return res.json({ success: false, err });
+
+      //payment에 transaction정보 저장
+      const payment = new Payment(transactionData);
+      payment.save((err, doc) => {
+        // doc에는 저장한 payment가 들어있음.
+        if (err) return res.json({ success: false, err });
+
+        //3. Product Collection 안에 Sold 필드 정보 업데이트 시켜주기
+
+        //   상품당 몇개의 quantitiy를 샀는지
+
+        let products = [];
+        doc.product.forEach((item) => {
+          products.push({ id: item.id, quantity: item.quantity });
+          //구매한 상품의 아이디와 수량을 알수있음.
+
+          async.eachSeries(
+            products,
+            (item, callback) => {
+              Product.update(
+                { _id: item.id },
+                {
+                  $inc: {
+                    sold: item.quantity,
+                  },
+                },
+                { new: false },
+                callback
+              );
+            },
+            (err) => {
+              if (err) return res.status(400).json({ success: false });
+              res.status(200).json({
+                success: true,
+                cart: user.cart,
+                cartDetail: [],
+              });
+            }
+          );
+        });
+      });
+    }
+  );
 });
 module.exports = router;

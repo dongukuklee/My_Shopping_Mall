@@ -6,14 +6,14 @@ import {
   onSuccessBuy,
 } from "../../../_actions/user_actions";
 import UserCardBlock from "./Sections/UserCardBlock";
-import { Empty } from "antd";
+import { Empty, Result } from "antd";
 import Paypal from "../../utils/Paypal";
 
 const CartPage = (props) => {
   const dispatch = useDispatch();
 
   const [total, setTotal] = useState(0);
-
+  const [showSuccess, setShowSuccess] = useState(false);
   const [showTotal, setShowTotal] = useState(false);
   useEffect(() => {
     let cartItems = [];
@@ -62,6 +62,7 @@ const CartPage = (props) => {
     ).then((response) => {
       if (response.payload.success) {
         setShowTotal(false);
+        setShowSuccess(true);
       }
     });
   };
@@ -78,6 +79,8 @@ const CartPage = (props) => {
           <div style={{ marginTop: "3rem" }}>
             <h2>Total Amount: ${total}</h2>
           </div>
+        ) : showSuccess ? (
+          <Result status="success" title="Successfully Purchased Items!" />
         ) : (
           <>
             <br />
